@@ -646,6 +646,12 @@ function defaultSettings() {
     compactTokenUnits: 'western',
     tokenRateMode: 'speed',
     heatmapMetric: 'cost',
+    dashboardHeatmapMetric: null,
+    dashboardStageView: 'flow',
+    dashboardFollowPeriodTabs: false,
+    dashboardVisiblePeriods: [],
+    dashboardShowVelocity: true,
+    dashboardShowQuotas: true,
     modelRankingMetric: 'tokens',
     homeActiveDaysWindow: 'all',
     showExactHomeTrendTokens: false,
@@ -824,6 +830,16 @@ function defaultSettings() {
       dismissedVersion: null
     }
   };
+}
+
+function normalizeDashboardStageView(value) {
+  return value === '2d' || value === '3d' ? value : 'flow';
+}
+
+function normalizeDashboardPeriods(value) {
+  return Array.isArray(value)
+    ? fixedPeriodRangesApi.PERIOD_TAB_OPTIONS.filter(period => value.includes(period))
+    : [];
 }
 
 function resettableSettingsDefaults() {
@@ -2202,6 +2218,12 @@ function readSettings() {
     merged.collectionIntervalMs = normalizeCollectionIntervalMs(merged.collectionIntervalMs);
     merged.syncUploadIntervalMs = normalizeSyncUploadIntervalMs(merged.syncUploadIntervalMs);
     merged.heatmapMetric = normalizeHeatmapMetric(merged.heatmapMetric);
+    merged.dashboardHeatmapMetric = merged.dashboardHeatmapMetric == null ? null : normalizeHeatmapMetric(merged.dashboardHeatmapMetric);
+    merged.dashboardStageView = normalizeDashboardStageView(merged.dashboardStageView);
+    merged.dashboardVisiblePeriods = normalizeDashboardPeriods(merged.dashboardVisiblePeriods);
+    merged.dashboardFollowPeriodTabs = parseBoolean(merged.dashboardFollowPeriodTabs, false);
+    merged.dashboardShowVelocity = parseBoolean(merged.dashboardShowVelocity, true);
+    merged.dashboardShowQuotas = parseBoolean(merged.dashboardShowQuotas, true);
     merged.modelRankingMetric = normalizeRankingMetric(merged.modelRankingMetric);
     merged.homeActiveDaysWindow = normalizeHomeActiveDaysWindow(merged.homeActiveDaysWindow);
     merged.showExactHomeTrendTokens = parseBoolean(merged.showExactHomeTrendTokens, false);
@@ -4735,6 +4757,7 @@ function sendPush(payload, options = {}) {
     && (typeof dashboardWindowReady === 'undefined' || dashboardWindowReady)
     && typeof dashboardWindow.isVisible === 'function'
     && dashboardWindow.isVisible()
+    && !dashboardWindow.isMinimized()
   );
   let rendererPayload = payload;
   let dashboardPayload = payload;
@@ -6119,6 +6142,7 @@ function sendStatsPresentationToRenderer(options = {}) {
     && (typeof dashboardWindowReady === 'undefined' || dashboardWindowReady)
     && typeof dashboardWindow.isVisible === 'function'
     && dashboardWindow.isVisible()
+    && !dashboardWindow.isMinimized()
   );
   if (!wantsMain && !wantsDashboard) return false;
   const visibleStats = electronPresentationStats(latestStats);
@@ -8309,6 +8333,14 @@ app.whenReady().then(() => {
     if (patch.collectionIntervalMs !== undefined) normalizedPatch.collectionIntervalMs = normalizeCollectionIntervalMs(patch.collectionIntervalMs, settings.collectionIntervalMs);
     if (patch.syncUploadIntervalMs !== undefined) normalizedPatch.syncUploadIntervalMs = normalizeSyncUploadIntervalMs(patch.syncUploadIntervalMs, settings.syncUploadIntervalMs);
     if (patch.heatmapMetric !== undefined) normalizedPatch.heatmapMetric = normalizeHeatmapMetric(patch.heatmapMetric, settings.heatmapMetric);
+    if (patch.dashboardHeatmapMetric !== undefined) {
+      normalizedPatch.dashboardHeatmapMetric = patch.dashboardHeatmapMetric === null ? null : normalizeHeatmapMetric(patch.dashboardHeatmapMetric);
+    }
+    if (patch.dashboardStageView !== undefined) normalizedPatch.dashboardStageView = normalizeDashboardStageView(patch.dashboardStageView);
+    if (patch.dashboardVisiblePeriods !== undefined) normalizedPatch.dashboardVisiblePeriods = normalizeDashboardPeriods(patch.dashboardVisiblePeriods);
+    for (const key of ['dashboardFollowPeriodTabs', 'dashboardShowVelocity', 'dashboardShowQuotas']) {
+      if (patch[key] !== undefined) normalizedPatch[key] = parseBoolean(patch[key], settings[key]);
+    }
     if (patch.homeActiveDaysWindow !== undefined) normalizedPatch.homeActiveDaysWindow = normalizeHomeActiveDaysWindow(patch.homeActiveDaysWindow, settings.homeActiveDaysWindow);
     if (patch.sessionContextMetric !== undefined) normalizedPatch.sessionContextMetric = normalizeSessionContextMetric(patch.sessionContextMetric, settings.sessionContextMetric);
     settings = normalizeWindowBehaviorSettings({
@@ -8881,7 +8913,8 @@ app.whenReady().then(() => {
     ]));
   });
   ipcMain.handle('session:getDetail', (_event, args) => {
-    const { client, sessionId, period, sessionCost, reasonixSessionRef } = args || {};
+    const { client, sessionId, period, sessionCost, reasonixSessionRef, snapshotSource } = args || {};
+    if (snapshotSource != null && snapshotSource !== hubModeGeneration) return null;
     return readSessionDetailForPlatform({ client, sessionId, period, sessionCost, reasonixSessionRef }, {
       lookupModelPricing, getPricingRevision: () => pricingFingerprint({ pricingPath: customPricingPath() })
     });
@@ -9205,6 +9238,9 @@ app.whenReady().then(() => {
     if (process.platform === 'darwin') win.setBackgroundColor('#00000000');
     dashboardWindowReady = true;
     showDashboardWindow(win);
+  });
+  ipcMain.on('dashboard:openAppSettings', (event) => {
+    if (event.sender === dashboardWindow?.webContents && event.senderFrame === event.sender.mainFrame) openSettingsFromTray();
   });
   ipcMain.on('dashboard:minimize', (event) => { BrowserWindow.fromWebContents(event.sender)?.minimize(); });
   ipcMain.on('dashboard:close', (event) => { BrowserWindow.fromWebContents(event.sender)?.close(); });
