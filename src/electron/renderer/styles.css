@@ -4391,6 +4391,21 @@ html.is-windows .settings-panel select option {
   box-shadow: none;
   backdrop-filter: none;
 }
+.home-mode .total-panel {
+  --total-number-gap: 6px;
+  --total-cost-gap: 4px;
+  padding: 6px 10px 7px;
+  margin-bottom: 5px;
+  border: 1px solid rgba(var(--accent-rgb), 0.24);
+  border-radius: 11px;
+  background: linear-gradient(120deg, rgba(var(--accent-rgb), 0.11), rgba(var(--overlay-rgb), 0.025));
+}
+.home-mode .total-panel .cost {
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: rgba(var(--accent-rgb), 0.11);
+  color: var(--text);
+}
 .label-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 0.6875rem; }
 .total-number-row {
   display: flex;
@@ -4648,6 +4663,7 @@ html.is-windows .settings-panel select option {
   scrollbar-width: none;
 }
 .home-panel::-webkit-scrollbar { width: 0; height: 0; }
+.home-mode .home-panel { gap: 8px; }
 /* Content scrolled under the hero fades out instead of being cut mid-line.
    The fade grows with the first few pixels of scroll, so the page at rest
    keeps its first heading fully drawn. */
@@ -4680,6 +4696,21 @@ html.is-windows .settings-panel select option {
   text-align: left;
   cursor: pointer;
   transition: opacity 140ms ease, transform 140ms ease;
+}
+.home-panel > :is(.home-module-limits, .home-module-model, .home-module-session) {
+  padding: 7px 9px 8px;
+  border: 1px solid rgba(var(--line-rgb), 0.14);
+  border-radius: 10px;
+  background: rgba(var(--overlay-rgb), 0.036);
+}
+.home-panel > :is(.home-module-limits, .home-module-model, .home-module-session):focus-visible {
+  outline-offset: -2px;
+}
+.home-panel > .home-module-session .home-module-meta {
+  padding: 2px 5px;
+  border-radius: 5px;
+  background: rgba(var(--success-rgb), 0.12);
+  color: var(--success);
 }
 .home-module:hover,
 .home-module:focus-visible {
@@ -4837,8 +4868,22 @@ html.is-windows .settings-panel select option {
   text-align: right;
 }
 .home-model-row {
-  grid-template-columns: 10px minmax(0, 1fr) minmax(42px, auto) minmax(31px, auto);
+  grid-template-columns: 10px minmax(0, 1fr) minmax(42px, auto) minmax(36px, auto);
   column-gap: 8px;
+}
+.home-model-share {
+  display: grid;
+  gap: 2px;
+}
+.home-model-share::after {
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    var(--home-model-accent, light-dark(#2866a4, var(--blue))) var(--home-model-share, 0%),
+    rgba(var(--overlay-rgb), 0.13) 0
+  );
+  content: '';
 }
 .home-tool-row {
   grid-template-columns: 10px minmax(0, 1fr) minmax(42px, auto) minmax(31px, auto);
@@ -5123,18 +5168,17 @@ html.is-windows .settings-panel select option {
   inherits: true;
   initial-value: transparent;
 }
-/* Monochrome Home: one neutral ink for every meter, brightening to a lit
-   tail; status recolours the fill (nearly out) and the reading. Vendor
-   colours set the bar inline. */
+/* Use the Home accent unless status or the vendor-colour preference
+   supplies a specific colour. */
 .home-limit-track {
-  --home-limit-bar: var(--text);
-  --home-limit-tail: light-dark(var(--text), #fff);
+  --home-limit-bar: var(--accent);
+  --home-limit-tail: color-mix(in srgb, var(--accent) 82%, var(--text));
   --home-limit-glow: light-dark(color-mix(in srgb, var(--home-limit-bar) 25%, transparent),
     color-mix(in srgb, var(--home-limit-bar) 55%, transparent));
   position: relative;
   grid-column: 4;
   min-width: 0;
-  height: 4px;
+  height: 5px;
 }
 .home-limit-window.is-low .home-limit-track {
   --home-limit-bar: var(--yellow);

@@ -7859,9 +7859,8 @@ function homeNearBlackColor(color) {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b < 0.12;
 }
 
-// Home is monochrome unless vendor colours are switched on: list marks and
-// limit meters share one neutral ink, and colour is left to status
-// (exhausted, nearly out).
+// Keep list marks neutral by default. The vendor preference adds brand
+// colours to the marks and overrides the theme accents on the bars.
 function homeVendorColorsEnabled() {
   return state.settings?.homeVendorColors === true;
 }
@@ -7880,9 +7879,8 @@ function homeListMarkColor(color) {
   return homeVendorColorsEnabled() ? homeVendorRevealColor(color) : 'rgba(var(--overlay-rgb), 0.5)';
 }
 
-// Tools and Models list their split as aligned rows; the share column carries
-// the proportion, so Home keeps horizontal bars for limits alone.
-function homeSplitRow(className, row, iconKind) {
+// Model shares include a scale so the ranking is visible at a glance.
+function homeSplitRow(className, row, iconKind, { showShareBar = false } = {}) {
   const item = document.createElement('div');
   item.className = `home-list-row ${className}`;
   item.dataset.key = row.key;
@@ -7896,7 +7894,15 @@ function homeSplitRow(className, row, iconKind) {
   value.textContent = formatCompact(row.value);
   const share = document.createElement('span');
   share.className = 'home-list-aux';
-  share.textContent = formatPercent(row.share * 100);
+  const sharePercent = row.share * 100;
+  share.textContent = formatPercent(sharePercent);
+  if (showShareBar) {
+    share.classList.add('home-model-share');
+    share.style.setProperty('--home-model-share', `${Math.max(0, Math.min(100, sharePercent || 0))}%`);
+    if (homeVendorColorsEnabled()) {
+      share.style.setProperty('--home-model-accent', homeVendorRevealColor(row.color));
+    }
+  }
   item.append(mark, name, value, share);
   return item;
 }
@@ -7912,7 +7918,8 @@ function renderHomeModelModule(period) {
     return module;
   }
   for (const row of rows) {
-    body.append(homeSplitRow('home-model-row', row, iconKindFor({ key: row.key || row.name, modelSource: row.modelSource }, 'model')));
+    const icon = iconKindFor({ key: row.key || row.name, modelSource: row.modelSource }, 'model');
+    body.append(homeSplitRow('home-model-row', row, icon, { showShareBar: true }));
   }
   return module;
 }
