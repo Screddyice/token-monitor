@@ -612,7 +612,8 @@ test('the reveal mode is a persisted setting that defaults to speed', () => {
   assert.match(main, /merged\.tokenRateMode = normalizeTokenRateMode\(merged\.tokenRateMode\);/);
   assert.match(main, /tokenRateMode: normalizeTokenRateMode\(patch\.tokenRateMode \?\? settings\.tokenRateMode\)/);
   // Hover and click must cover the same surface, so both reveal triggers toggle.
-  assert.match(app, /els\.appTitleMark\?\.addEventListener\('click', toggleTokenRateMode\)/);
+  // Screddy fork: the title mark opens shawn-reddy.com instead (screddyHomeLink.test.js).
+  assert.doesNotMatch(app, /els\.appTitleMark\?\.addEventListener\('click', toggleTokenRateMode\)/);
   assert.match(app, /els\.liveDot\?\.addEventListener\('click', toggleTokenRateMode\)/);
   const presentationIndex = html.indexOf('<script src="tokenRatePresentation.js"></script>');
   const appIndex = html.indexOf('<script src="app.js"></script>');
