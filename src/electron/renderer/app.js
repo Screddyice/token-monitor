@@ -16270,24 +16270,20 @@ els.hubModeOptions.addEventListener('change', async (event) => {
   await refreshStats();
 });
 
-// Both, not just the mark: either one reveals the reading on hover, so a click or hold that
-// only worked on one of them would leave the other looking broken. The suppression listener
-// must be registered before the existing toggle listener so a long hold does not also toggle
-// the persisted speed/burn framing when its pointerup synthesizes a click.
-els.appTitleMark?.addEventListener('pointerdown', startTokenRateBoost);
+// The suppression listener must be registered before the toggle listener so a long hold does
+// not also toggle the persisted speed/burn framing when its pointerup synthesizes a click.
+const SHAWN_REDDY_URL = 'https://shawn-reddy.com/';
+// Screddy fork: the title mark is the SR logo and opens shawn-reddy.com, so the hold and the
+// speed/burn toggle live on the live dot alone. Hovering either still reveals the reading.
+els.appTitleMark?.addEventListener('click', () => window.tokenMonitor.openExternal?.(SHAWN_REDDY_URL));
 els.liveDot?.addEventListener('pointerdown', startTokenRateBoost);
-els.appTitleMark?.addEventListener('lostpointercapture', (event) => {
+els.liveDot?.addEventListener('lostpointercapture', (event) => {
   // A normal pointerup has already entered settling before capture is released. Only an
   // unexpected loss while boosting is a cancellation; otherwise the release animation would
   // be cut off immediately by the browser's follow-up lostpointercapture event.
   cancelTokenRateBoost(event, { preserveSettling: true });
 });
-els.liveDot?.addEventListener('lostpointercapture', (event) => {
-  cancelTokenRateBoost(event, { preserveSettling: true });
-});
-els.appTitleMark?.addEventListener('click', suppressTokenRateClickAfterHold);
 els.liveDot?.addEventListener('click', suppressTokenRateClickAfterHold);
-els.appTitleMark?.addEventListener('click', toggleTokenRateMode);
 els.liveDot?.addEventListener('click', toggleTokenRateMode);
 els.liveTokenRate?.addEventListener('click', toggleTokenRateMode);
 

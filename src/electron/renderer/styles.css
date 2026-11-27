@@ -400,6 +400,15 @@ body.is-windows.floating-bubble-collapsed-right .floating-bubble-tab {
   display: inline;
   position: relative;
 }
+/* Screddy fork: the mark is the SR logo, sized to the title's cap height. */
+.app-title-mark img {
+  display: inline-block;
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: -0.2em;
+  border-radius: 50%;
+  pointer-events: none;
+}
 .live-dot {
   display: inline-block;
   position: relative;
