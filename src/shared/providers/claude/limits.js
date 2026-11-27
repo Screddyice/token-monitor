@@ -7,6 +7,7 @@ const { mergedOwnerAccounts } = require('../../limits/ownerAccountSlots');
 // the handful of names the widget and the tests use.
 
 const { spawn, execFile } = require('node:child_process');
+const { createHash } = require('node:crypto');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -207,6 +208,16 @@ function claudeCredentialsFromOauth(oauth, meta = {}) {
   };
 }
 
+// Claude Code keeps the login of a custom CLAUDE_CONFIG_DIR in its own macOS keychain
+// service, "Claude Code-credentials-" plus the first 8 hex digits of sha256(dir), so
+// read that one first. The plain service is still tried, as before.
+function claudeKeychainServices(env = process.env) {
+  const service = 'Claude Code-credentials';
+  const configDir = String(env.CLAUDE_CONFIG_DIR || '').trim() ? env.CLAUDE_CONFIG_DIR : '';
+  if (!configDir) return [service];
+  return [`${service}-${createHash('sha256').update(configDir).digest('hex').slice(0, 8)}`, service];
+}
+
 async function readClaudeCredentials(deps = {}) {
   const env = deps.env || process.env;
   if (env.CLAUDE_CODE_OAUTH_TOKEN) {
@@ -252,12 +263,13 @@ async function readClaudeCredentials(deps = {}) {
   }
 
   if ((deps.platform || process.platform) === 'darwin' && deps.readMacKeychain !== false) {
-    const text = await readMacKeychainSecret('Claude Code-credentials', deps).catch(() => '');
-    if (text) {
+    for (const service of claudeKeychainServices(env)) {
+      const text = await readMacKeychainSecret(service, deps).catch(() => '');
+      if (!text) continue;
       const oauth = extractClaudeOauth(JSON.parse(text));
       const credentials = claudeCredentialsFromOauth(oauth, {
         source: 'keychain',
-        identity: `keychain:Claude Code-credentials:${oauth?.subscriptionType || ''}:${oauth?.rateLimitTier || ''}`
+        identity: `keychain:${service}:${oauth?.subscriptionType || ''}:${oauth?.rateLimitTier || ''}`
       });
       if (credentials) return credentials;
     }
@@ -2303,6 +2315,8 @@ async function touchClaudeAuthPath(deps = {}) {
 }
 
 module.exports = {
+  claudeKeychainServices,
+  readClaudeCredentials,
   claudeWebAccountMetadata,
   normalizeClaudeManagedAccounts,
   fetchClaudeAccountsLimits,

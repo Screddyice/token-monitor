@@ -503,3 +503,9 @@ Issues and PRs are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md); proje
 ## License
 
 [MIT](LICENSE) © [@Javis](https://github.com/Javis603)
+
+## Screddy fork
+
+`Screddyice/token-monitor` is the copy of Token Monitor that the Screddy IDE ([Screddyice/screddys-ide](https://github.com/Screddyice/screddys-ide)) links in as a git submodule. It follows [Javis603/token-monitor](https://github.com/Javis603/token-monitor) and carries these changes on top:
+
+- **Claude logins in a custom `CLAUDE_CONFIG_DIR` (macOS).** Claude Code stores that login in the Keychain service `Claude Code-credentials-<first 8 hex digits of sha256(config dir)>`. Token Monitor reads that service first, then the plain one, so the plan badge (for example "Ultra") shows for those logins. See `docs/providers/claude.md`.

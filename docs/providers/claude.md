@@ -74,6 +74,8 @@ The single-credential `fetchClaudeLimits()` remains the form validator and uses 
 2. Claude Code OAuth credentials discovered from env/file, Windows Credential Manager or macOS Keychain;
 3. the authenticated Claude CLI usage screen as a fallback only for not-configured, rate-limited, unavailable or generic OAuth failures.
 
+On macOS, Claude Code stores the login of a custom `CLAUDE_CONFIG_DIR` under its own Keychain service, `Claude Code-credentials-` plus the first 8 hex digits of `sha256(<config dir>)`. When `CLAUDE_CONFIG_DIR` is set, Keychain discovery reads that service first and then the plain `Claude Code-credentials` service; without it, only the plain service is read.
+
 The desktop **Allow Claude CLI fallback** setting defaults on. Turning it off prevents limits collection from launching Claude CLI for auth checks, `/usage` or delegated macOS `/status` credential refresh. Web and direct OAuth requests continue; non-macOS OAuth token refresh does not require CLI and remains available. Failed reads use the normal limits-runtime error and last-good retention behavior. The setting applies to this device, not other devices contributing quota readings.
 
 An identity-resolution failure after successful OAuth quota is not allowed to fall through and mint a differently keyed CLI row. The limits runtime retains the previous stable account instead.
@@ -117,5 +119,5 @@ Prepaid balance is best effort and cached more slowly than usage. A failed or re
 For retained Desktop discovery and watch rules, run `node --test tests/shared/claudeDesktopWatch.test.js tests/shared/tokscaleUpstreamSources.test.js`. Run the Claude session, limits and Electron transport tests when changing those parts of this note:
 
 ```bash
-node --test tests/shared/claudeProbe.test.js tests/shared/claudePrintedUsage.test.js tests/shared/claudeSessionActivity.test.js tests/shared/claudeSessionMetadata.test.js tests/shared/limitCollector.claude.test.js tests/electron/claudeWebFetch.test.js
+node --test tests/shared/claudeProbe.test.js tests/shared/claudePrintedUsage.test.js tests/shared/claudeSessionActivity.test.js tests/shared/claudeSessionMetadata.test.js tests/shared/limitCollector.claude.test.js tests/shared/claudeKeychainService.test.js tests/electron/claudeWebFetch.test.js
 ```
