@@ -7,8 +7,8 @@ const { claudeKeychainServices, readClaudeCredentials } = require('../../src/sha
 
 // Claude Code keeps the login of a custom CLAUDE_CONFIG_DIR under its own keychain
 // service: "Claude Code-credentials-" plus the first 8 hex digits of sha256(dir).
-const CONFIG_DIR = '/Users/example/team-claude';
-const SUFFIXED = 'Claude Code-credentials-e2e25c39';
+const CONFIG_DIR = '/opt/example/claude-config';
+const SUFFIXED = 'Claude Code-credentials-089f91a8';
 
 const login = (subscriptionType, rateLimitTier) => JSON.stringify({
   claudeAiOauth: {
