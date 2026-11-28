@@ -91,6 +91,17 @@ async function check() {
   }
   const survived = { nodes: identities.every(node => node.isConnected), focus: document.activeElement === trigger, popover: tooltip.matches(':popover-open'), scroller: document.querySelector('.home-activity-scroll') === scroller, scroll: scroller.scrollLeft === scrollLeft && els.homePanel.scrollTop === scrollTop, heatmapTooltip: document.querySelector('.home-heatmap-tooltip').dataset.visible === 'true' };
   if (assertPreservation) {
+    const modelShare = document.querySelector('.home-model-share');
+    assert.ok(modelShare, 'models show a share bar alongside the percentage');
+    assert.equal(modelShare.style.getPropertyValue('--home-model-share'), `${1000000 / 5500000 * 100}%`);
+    assert.equal(modelShare.style.getPropertyValue('--home-model-accent'), '', 'default uses the theme colour');
+    assert.equal(document.querySelector('.home-tool-row .home-model-share'), null);
+    state.settings.homeVendorColors = true;
+    renderHome();
+    assert.equal(modelShare.style.getPropertyValue('--home-model-accent'), '#abc');
+    state.settings.homeVendorColors = false;
+    renderHome();
+    assert.equal(modelShare.style.getPropertyValue('--home-model-accent'), '');
     for (const [name, ok] of Object.entries(survived)) assert.ok(ok, name);
     assert.equal(tooltip.textContent.includes('27%'), true, 'open tooltip content updates');
     assert.equal(row.querySelector('.home-list-value').textContent, String(sessions[0].totalTokens));
