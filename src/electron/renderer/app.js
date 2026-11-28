@@ -278,12 +278,12 @@ const VIEW_DISPLAY_OPTIONS = [
 const viewPeriodValues = new Set(fixedPeriodRangesApi.PERIOD_TAB_OPTIONS);
 const viewBreakdownValues = new Set(['home', ...baseBreakdownOrder, 'status', 'limits', 'trends']);
 const HOME_MODULE_OPTIONS = [
+  { id: 'trends', labelKey: 'home.activity', viewId: 'trends' },
   { id: 'limits', labelKey: 'home.limits', viewId: 'limits' },
   { id: 'tool', labelKey: 'home.tools', viewId: 'tool' },
   { id: 'model', labelKey: 'home.models', viewId: 'model' },
   { id: 'session', labelKey: 'home.sessions', viewId: 'session' },
-  { id: 'device', labelKey: 'home.devices', viewId: 'device' },
-  { id: 'trends', labelKey: 'home.activity', viewId: 'trends' }
+  { id: 'device', labelKey: 'home.devices', viewId: 'device' }
 ];
 const pluginViewsApi = window.TokenMonitorPluginViews;
 const pluginPlacementsApi = window.TokenMonitorPluginPlacements;

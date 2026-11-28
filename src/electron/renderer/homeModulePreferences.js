@@ -5,7 +5,8 @@
   if (typeof module === 'object' && module.exports) module.exports = api;
   if (root) root.TokenMonitorHomeModulePreferences = api;
 })(typeof window !== 'undefined' ? window : null, function createHomeModulePreferencesApi() {
-  const DEFAULT_HOME_MODULE_ORDER = 'limits,tool,model,session,device,trends';
+  // Activity leads Home so the heatmap and trend are the first thing shown.
+  const DEFAULT_HOME_MODULE_ORDER = 'trends,limits,tool,model,session,device';
 
   const HOME_MODULE_COUNT_MAX = 50;
   // Plugin views placed on Home (`plugin:<pluginId>/<viewId>`). They are kept
